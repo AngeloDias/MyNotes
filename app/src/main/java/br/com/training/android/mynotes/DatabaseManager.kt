@@ -2,8 +2,10 @@ package br.com.training.android.mynotes
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.database.sqlite.SQLiteQueryBuilder
 import android.widget.Toast
 
 class DatabaseManager(context: Context) {
@@ -44,6 +46,15 @@ class DatabaseManager(context: Context) {
 
     fun insertIntoDatabase(values: ContentValues): Long {
         return sqlDB!!.insert(DB_TABLE_NAME, "", values)
+    }
+
+    fun query(projection: Array<String>, selection: String, selectionArgs: Array<String>, sortOrder: String): Cursor {
+        val qBuilder = SQLiteQueryBuilder()
+        val cursor = qBuilder.query(sqlDB, projection, selection, selectionArgs, null, null, sortOrder)
+
+        qBuilder.tables = DB_TABLE_NAME
+
+        return cursor
     }
 
 }

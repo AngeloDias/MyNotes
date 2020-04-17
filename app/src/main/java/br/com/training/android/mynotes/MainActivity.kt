@@ -23,7 +23,29 @@ class MainActivity : AppCompatActivity() {
         listNotes.add(Note(2, "Meeting with psychologist", "To talk about myself and my life"))
         listNotes.add(Note(3, "Meeting with personal trainer", "To discuss the way to become a real body builder"))
 
-        listViewNotes.adapter = MyNotesAdapter(listNotes)
+        loadQuery("%")
+    }
+
+    private fun loadQuery(title: String) {
+        val dbManager = DatabaseManager(this)
+        val projections = arrayOf(DatabaseManager.COL_ID, DatabaseManager.COL_TITLE, DatabaseManager.COL_DESC)
+        val selectionArgs = arrayOf(title)
+        val cursor = dbManager.query(projections, DatabaseManager.COL_TITLE + "LIKE ?",
+            selectionArgs, DatabaseManager.COL_TITLE)
+
+        listNotes.clear()
+
+        if(cursor.moveToFirst()) {
+            do {
+                val id = cursor.getInt(cursor.getColumnIndex(DatabaseManager.COL_ID))
+                val colTitle = cursor.getString(cursor.getColumnIndex(DatabaseManager.COL_TITLE))
+                val desc = cursor.getString(cursor.getColumnIndex(DatabaseManager.COL_DESC))
+
+                listNotes.add(Note(id, colTitle, desc))
+            } while (cursor.moveToNext())
+
+            listViewNotes.adapter = MyNotesAdapter(listNotes)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -36,6 +58,7 @@ class MainActivity : AppCompatActivity() {
         searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(p0: String?): Boolean {
                 Toast.makeText(applicationContext, p0!!, Toast.LENGTH_LONG).show()
+                loadQuery("% %$p0 %")
 
                 return false
             }
