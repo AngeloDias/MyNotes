@@ -26,11 +26,16 @@ class MainActivity : AppCompatActivity() {
         loadQuery("%")
     }
 
+    override fun onResume() {
+        super.onResume()
+        loadQuery("%")
+    }
+
     private fun loadQuery(title: String) {
         val dbManager = DatabaseManager(this)
         val projections = arrayOf(DatabaseManager.COL_ID, DatabaseManager.COL_TITLE, DatabaseManager.COL_DESC)
         val selectionArgs = arrayOf(title)
-        val cursor = dbManager.query(projections, DatabaseManager.COL_TITLE + "LIKE ?",
+        val cursor = dbManager.query(projections, DatabaseManager.COL_TITLE + " LIKE ?",
             selectionArgs, DatabaseManager.COL_TITLE)
 
         listNotes.clear()
@@ -44,7 +49,7 @@ class MainActivity : AppCompatActivity() {
                 listNotes.add(Note(id, colTitle, desc))
             } while (cursor.moveToNext())
 
-            listViewNotes.adapter = MyNotesAdapter(listNotes)
+            listViewNotes.adapter = MyNotesAdapter(listNotes, this)
         }
     }
 
@@ -82,15 +87,31 @@ class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    inner class MyNotesAdapter(notes: ArrayList<Note>) : BaseAdapter() {
+    inner class MyNotesAdapter(notes: ArrayList<Note>, ctx: Context) : BaseAdapter() {
         var listNotes = notes
+        var context = ctx
 
         override fun getView(p0: Int, p1: View?, p2: ViewGroup?): View {
             val myView = layoutInflater.inflate(R.layout.ticket, null)
-            val myNode = listNotes[p0]
+            val myNote = listNotes[p0]
 
-            myView.txtViewTitle.text = myNode.nodeName
-            myView.txtViewContent.text = myNode.nodeDesc
+            myView.txtViewTitle.text = myNote.nodeName
+            myView.txtViewContent.text = myNote.nodeDesc
+            myView.imgViewIconDelete.setOnClickListener {
+                val dbManager = DatabaseManager(context)
+                val selectionArgs = arrayOf(myNote.nodeID.toString())
+
+                dbManager.delete("ID=?", selectionArgs)
+                loadQuery("%")
+            }
+            myView.imgViewIconEdit.setOnClickListener {
+                val intent = Intent(applicationContext, AddNotesActivity::class.java)
+
+                intent.putExtra("ID", myNote.nodeID)
+                intent.putExtra("name", myNote.nodeName)
+                intent.putExtra("desc", myNote.nodeDesc)
+                startActivity(intent)
+            }
 
             return myView
         }

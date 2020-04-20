@@ -50,11 +50,18 @@ class DatabaseManager(context: Context) {
 
     fun query(projection: Array<String>, selection: String, selectionArgs: Array<String>, sortOrder: String): Cursor {
         val qBuilder = SQLiteQueryBuilder()
-        val cursor = qBuilder.query(sqlDB, projection, selection, selectionArgs, null, null, sortOrder)
 
         qBuilder.tables = DB_TABLE_NAME
 
-        return cursor
+        return qBuilder.query(sqlDB, projection, selection, selectionArgs, null, null, sortOrder)
+    }
+
+    fun delete(selection: String, selectionArgs: Array<String>): Int {
+         return sqlDB!!.delete(DB_TABLE_NAME, selection, selectionArgs)
+    }
+
+    fun update(values: ContentValues, selection: String, selectionArgs: Array<String>):Int {
+        return sqlDB!!.update(DB_TABLE_NAME, values, selection, selectionArgs)
     }
 
 }
